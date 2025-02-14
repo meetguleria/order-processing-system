@@ -1,0 +1,103 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Order Processing System using AWS SAM.
+  This template defines Lambda functions, an API Gateway, a DynamoDB table, an SQS queue, and an SNS topic.
+
+Globals:
+  Function:
+    Runtime: nodejs18.x
+    Timeout: 10
+    Environment:
+      Variables:
+        DYNAMO_TABLE_NAME: !Ref OrdersTable
+        SQS_QUEUE_URL: !Ref OrderQueue
+        SNS_TOPIC_ARN: !Ref NotificationTopic
+
+Resources:
+
+  # Lambda Functions
+
+  CreateOrderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/functions/createOrder.handler
+      CodeUri: .
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref OrdersTable
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action: sqs:SendMessage
+              Resource: "arn:aws:sqs:us-east-1:491085390097:OrderQueue"
+      Events:
+        CreateOrderApi:
+          Type: Api
+          Properties:
+            Path: /orders
+            Method: post
+
+  ProcessPaymentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/functions/processPayment.handler
+      CodeUri: .
+      Events:
+        PaymentQueue:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt OrderQueue.Arn
+
+  UpdateOrderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/functions/updateOrder.handler
+      CodeUri: .
+      Events:
+        UpdateOrderApi:
+          Type: Api
+          Properties:
+            Path: /orders/{orderID}
+            Method: put
+
+  SendNotificationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/functions/sendNotification.handler
+      CodeUri: .
+
+  CleanupOrdersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/functions/cleanupOrders.handler
+      CodeUri: .
+      Events:
+        CleanupSchedule:
+          Type: Schedule
+          Properties:
+            Schedule: rate(1 day)
+
+  # Infrastructure Resources
+
+  OrdersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: OrdersTable
+      AttributeDefinitions:
+        - AttributeName: orderID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: orderID
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  OrderQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: OrderQueue
+
+  NotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: NotificationTopic

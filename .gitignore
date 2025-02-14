@@ -1,0 +1,19 @@
+# Node modules and local dependencies
+node_modules/
+
+# Environment variables (contains sensitive info)
+.env
+
+# Local build artifacts for Serverless Application Model (SAM)
+.aws-sam/
+.serverless/
+
+# Deployment artifacts that can be regenerated
+packaged.yaml
+samconfig.toml
+
+# Coverage reports and test artifacts
+coverage/
+
+# OS-specific files
+.DS_Store

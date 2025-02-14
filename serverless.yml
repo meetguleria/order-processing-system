@@ -1,0 +1,59 @@
+service: order-processing-system
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+
+plugins:
+  - serverless-offline
+
+functions:
+  createOrder:
+    handler: src/functions/createOrder.handler
+    events:
+      - http:
+          path: orders
+          method: post
+  processPayment:
+    handler: src/functions/processPayment.handler
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - OrderQueue
+              - Arn
+  updateOrder:
+    handler: src/functions/updateOrder.handler
+    events:
+      - http:
+          path: orders/{orderID}
+          method: put
+  sendNotification:
+    handler: src/functions/sendNotification.handler
+  cleanupOrders:
+    handler: src/functions/cleanupOrders.handler
+    events:
+      - schedule: rate(1 day)
+
+resources:
+  Resources:
+    OrdersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${env:DYNAMO_TABLE_NAME}
+        AttributeDefinitions:
+          - AttributeName: orderID
+            AttributeType: S
+        KeySchema:
+          - AttributeName: orderID
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+    OrderQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${env:SQS_QUEUE_URL}
+    NotificationTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: ${env:SNS_TOPIC_ARN}

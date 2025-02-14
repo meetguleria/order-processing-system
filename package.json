@@ -1,0 +1,24 @@
+{
+  "name": "order-processing-system",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "start": "serverless offline"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.733.0",
+    "@aws-sdk/client-sns": "^3.732.0",
+    "@aws-sdk/client-sqs": "^3.731.1",
+    "@faker-js/faker": "^9.4.0",
+    "aws-sdk": "^2.1692.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "serverless-offline": "^14.4.0"
+  }
+}
