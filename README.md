@@ -57,7 +57,7 @@ All of these components are defined in the SAM template (`template.yaml`), which
 
 1. **Install Dependencies:**  
    Run the following in your project directory:
-   ```bash
+   ```
    npm install
    ```
 
