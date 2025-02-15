@@ -1,4 +1,3 @@
-```markdown
 # Order Processing System Using AWS SAM
 
 A serverless application that processes orders using AWS Lambda, API Gateway, DynamoDB, SQS, and SNS. This project demonstrates how to build a scalable, event-driven order processing workflow using AWS SAM (Serverless Application Model) and Node.js.
